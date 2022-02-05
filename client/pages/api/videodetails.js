@@ -1,30 +1,50 @@
 const ytdl = require("ytdl-core");
-const { chain, last } = require('lodash');
-import { idvalidator } from '../middlewares/idvalidator';
-import { idSchema } from '../schema/idSchema';
+const { chain, last } = require("lodash");
+import { idvalidator } from "../middlewares/idvalidator";
+import { idSchema } from "../schema/idSchema";
 
-
-const getResolutions = formats =>
+const getResolutions = (formats) =>
     chain(formats)
-    .filter('height')
-    .map('height')
+    .filter("height")
+    .map("height")
     .uniq()
-    .orderBy(null, 'desc')
+    .orderBy(null, "desc")
     .value();
 
 const handler = (req, res) => {
     const { id } = req.query;
     console.log(id);
 
-    ytdl.getInfo(id)
+    ytdl
+        .getInfo(id)
         .then(({ videoDetails, formats }) => {
-            const { title, thumbnails } = videoDetails
+            const { title, thumbnails } = videoDetails;
             const thumbnailURL = last(thumbnails).url;
-            const resolutions = getResolutions(formats)
+            const resolutions = getResolutions(formats);
             console.log(title);
-            res.json({ title, thumbnailURL, resolutions });
+            let allFormats = [];
+            resolutions.forEach((resolutionVal) => {
+                formats.forEach((formatVal) => {
+                    if (
+                        formatVal.height == resolutionVal &&
+                        (formatVal.codecs ? formatVal.codecs.startsWith("avc1") : false) &&
+                        formatVal.contentLength
+                    )
+                        allFormats.push({
+                            resolutions: `${resolutionVal}`,
+                            duration: `${formatVal.approxDurationMs}`,
+                            length: `${formatVal.contentLength}`,
+                        });
+                });
+            });
+            const key = "resolutions";
+
+            const videoFormats = [
+                ...new Map(allFormats.map((item) => [item[key], item])).values(),
+            ];
+            res.json({ title, thumbnailURL, videoFormats });
         })
-        .catch(err => console.log(err));
-}
+        .catch((err) => console.log(err));
+};
 
 export default idvalidator(idSchema, handler);

@@ -18,7 +18,7 @@ const handler = (req, res) => {
     ytdl
         .getInfo(id)
         .then(({ videoDetails, formats }) => {
-            const { title, thumbnails } = videoDetails;
+            const { title, thumbnails, author } = videoDetails;
             const thumbnailURL = last(thumbnails).url;
             const resolutions = getResolutions(formats);
             console.log(title);
@@ -42,7 +42,7 @@ const handler = (req, res) => {
             const videoFormats = [
                 ...new Map(allFormats.map((item) => [item[key], item])).values(),
             ];
-            res.json({ title, thumbnailURL, videoFormats });
+            res.json({ title, thumbnailURL, videoFormats, author });
         })
         .catch((err) => console.log(err));
 };

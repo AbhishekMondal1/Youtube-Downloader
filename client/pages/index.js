@@ -141,10 +141,10 @@ export default function Home() {
           <div className={styles.d_flex}>
             <h2>Formats</h2>
             {videoDetails.videoFormats.map((res, i) => (
-              <div className={styles.format_flex}>
-                <p key={i}>{res.resolutions}</p>
-                <p key={i}>{msTimeFormat(res.duration)}</p>
-                <p key={i}>{formatBytes(res.length)}</p>
+              <div className={styles.format_flex} key={i}>
+                <p key={i * 20}>{res.resolutions}</p>
+                <p key={i * 40}>{msTimeFormat(res.duration)}</p>
+                <p key={i * 60}>{formatBytes(res.length)}</p>
                 <button
                   onClick={(e) => downloadVideoHandle(e, res.resolutions)}
                 >
@@ -158,10 +158,10 @@ export default function Home() {
           <div className={styles.d_flex}>
             <h2>Formats</h2>
             {videoDetails.audioFormats.map((res, i) => (
-              <div className={styles.format_flex}>
-                <p key={i}>{res.quality}K</p>
-                <p key={i}>{msTimeFormat(res.duration)}</p>
-                <p key={i}>{formatBytes(res.length)}</p>
+              <div className={styles.format_flex} key={i}>
+                <p key={i * 20}>{res.quality}K</p>
+                <p key={i * 40}>{msTimeFormat(res.duration)}</p>
+                <p key={i * 60}>{formatBytes(res.length)}</p>
                 <button onClick={(e) => downloadAudioHandle(e, res.quality)}>
                   Convert
                 </button>

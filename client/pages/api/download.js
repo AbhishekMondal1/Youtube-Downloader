@@ -4,8 +4,8 @@ const { chain } = require("lodash");
 const { spawn } = require("child_process");
 const ffmpegPath = require("ffmpeg-static");
 const sanitize = require("sanitize-filename");
-import { validator } from "../middlewares/validator";
-import { querySchema } from "../schema/querySchema";
+import { validator } from "../../middlewares/validator";
+import { querySchema } from "../../schema/querySchema";
 const getResolutions = (formats) =>
     chain(formats)
     .filter("height")

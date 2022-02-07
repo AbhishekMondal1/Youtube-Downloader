@@ -1,7 +1,7 @@
 const ytdl = require("ytdl-core");
 const { chain, last } = require("lodash");
-import { idvalidator } from "../middlewares/idvalidator";
-import { idSchema } from "../schema/idSchema";
+import { idvalidator } from "../../middlewares/idvalidator";
+import { idSchema } from "../../schema/idSchema";
 
 const getResolutions = (formats) =>
     chain(formats)

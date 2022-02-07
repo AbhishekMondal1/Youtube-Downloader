@@ -23,6 +23,7 @@ const handler = (req, res) => {
             const resolutions = getResolutions(formats);
             console.log(title);
             let allFormats = [];
+            let audioFormats = [];
             resolutions.forEach((resolutionVal) => {
                 formats.forEach((formatVal) => {
                     if (
@@ -37,12 +38,24 @@ const handler = (req, res) => {
                         });
                 });
             });
+
             const key = "resolutions";
 
             const videoFormats = [
                 ...new Map(allFormats.map((item) => [item[key], item])).values(),
             ];
-            res.json({ title, thumbnailURL, videoFormats, author });
+
+            formats.forEach((formatVal) => {
+                if (formatVal.hasAudio === true && formatVal.hasVideo === false) {
+                    audioFormats.push({
+                        quality: `${formatVal.audioBitrate}`,
+                        duration: `${formatVal.approxDurationMs}`,
+                        length: `${formatVal.contentLength}`,
+                    });
+                }
+            });
+
+            res.json({ title, thumbnailURL, videoFormats, audioFormats, author });
         })
         .catch((err) => console.log(err));
 };

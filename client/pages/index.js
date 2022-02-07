@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import styles from "../styles/Home.module.css";
 import axios from "axios";
-import JsFileDownloader from "js-file-downloader";
+import JsFileDownloader from "js-file-download";
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -33,16 +33,50 @@ export default function Home() {
   };
 
   const downloadVideo = async (resolution) => {
-    const res = await axios.get(
-      `/api/download?id=${urlID}&format=video&resolution=${resolution}`
-    );
+    axios({
+      url: `/api/download?id=${urlID}&format=video&resolution=${resolution}`,
+      method: "GET",
+      responseType: "blob",
+    }).then((res) => {
+      console.log(res);
+      for (const h in res.headers) {
+        if (h == "content-disposition") {
+          let filename = res.headers[h].split(" ")[1];
+          console.log(filename);
+        }
+      }
+      filename = decodeURI(filename.split("filename=")[1]);
+      JsFileDownloader(res.data, filename);
+    });
   };
 
-  const download = async (e, resolution) => {
+  const downloadVideoHandle = async (e, resolution) => {
     e.preventDefault();
     resolution && downloadVideo(resolution);
   };
 
+  const downloadAudio = async (quality) => {
+    axios({
+      url: `/api/download?id=${urlID}&format=audio&quality=${quality}`,
+      method: "GET",
+      responseType: "blob",
+    }).then((res) => {
+      console.log(res);
+      for (const h in res.headers) {
+        if (h == "content-disposition") {
+          let filename = res.headers[h].split(" ")[1];
+          console.log(filename);
+        }
+      }
+      filename = decodeURI(filename.split("filename=")[1]);
+      JsFileDownloader(res.data, filename);
+    });
+  };
+
+  const downloadAudioHandle = async (e, quality) => {
+    e.preventDefault();
+    quality && downloadAudio(quality);
+  };
   const formatBytes = (bytes, decimals = 2) => {
     if (!bytes) return "Unknown size";
 
@@ -74,6 +108,9 @@ export default function Home() {
 
   return (
     <>
+      <Head>
+        <title>Youtube Downloader</title>
+      </Head>
       <div className={styles.d_flex}>
         <h1>Youtube Downloader</h1>
         <input
@@ -106,9 +143,26 @@ export default function Home() {
             {videoDetails.videoFormats.map((res, i) => (
               <div className={styles.format_flex}>
                 <p key={i}>{res.resolutions}</p>
-                <p>{msTimeFormat(res.duration)}</p>
-                <p>{formatBytes(res.length)}</p>
-                <button onClick={(e) => download(e, res.resolutions)}>
+                <p key={i}>{msTimeFormat(res.duration)}</p>
+                <p key={i}>{formatBytes(res.length)}</p>
+                <button
+                  onClick={(e) => downloadVideoHandle(e, res.resolutions)}
+                >
+                  Convert
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        {videoDetails && (
+          <div className={styles.d_flex}>
+            <h2>Formats</h2>
+            {videoDetails.audioFormats.map((res, i) => (
+              <div className={styles.format_flex}>
+                <p key={i}>{res.quality}K</p>
+                <p key={i}>{msTimeFormat(res.duration)}</p>
+                <p key={i}>{formatBytes(res.length)}</p>
+                <button onClick={(e) => downloadAudioHandle(e, res.quality)}>
                   Convert
                 </button>
               </div>

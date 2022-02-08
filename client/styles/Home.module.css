@@ -21,6 +21,9 @@
     font-weight: 400;
 }
 
+
+/* https://www.youtube.com/watch?v=tNoUfGI7A_I */
+
 .video_main_section {
     display: flex;
     flex-direction: row;
@@ -47,4 +50,20 @@
 
 .format_flex p {
     margin: 2rem;
+}
+
+.convert_btn {
+    height: 30px;
+    width: 60px;
+    padding: 5px;
+    margin-top: 1rem;
+    border-radius: 4px 4px 4px 4px;
+    color: #fff;
+    border: 1px solid #ffb74b;
+    background: #ffb836;
+    font-weight: 400;
+}
+
+.convert_btn:hover {
+    background-color: #f19914;
 }

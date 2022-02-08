@@ -146,6 +146,7 @@ export default function Home() {
                 <p key={i * 40}>{msTimeFormat(res.duration)}</p>
                 <p key={i * 60}>{formatBytes(res.length)}</p>
                 <button
+                  className={styles.convert_btn}
                   onClick={(e) => downloadVideoHandle(e, res.resolutions)}
                 >
                   Convert
@@ -162,7 +163,10 @@ export default function Home() {
                 <p key={i * 20}>{res.quality}K</p>
                 <p key={i * 40}>{msTimeFormat(res.duration)}</p>
                 <p key={i * 60}>{formatBytes(res.length)}</p>
-                <button onClick={(e) => downloadAudioHandle(e, res.quality)}>
+                <button
+                  className={styles.convert_btn}
+                  onClick={(e) => downloadAudioHandle(e, res.quality)}
+                >
                   Convert
                 </button>
               </div>

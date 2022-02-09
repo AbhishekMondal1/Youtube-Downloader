@@ -9,6 +9,13 @@ export default function Home() {
   const [url, setUrl] = useState("");
   const [urlID, setUrlID] = useState("");
   const [videoDetails, setVideoDetails] = useState(null);
+  const [isActive, setActive] = useState(1);
+  const [left, setLeft] = useState(1);
+
+  const toggleClass = (index) => {
+    setActive(index);
+    setLeft(index);
+  };
 
   useEffect(() => {
     console.log("ueleff-", url);
@@ -136,41 +143,77 @@ export default function Home() {
             <h3>by {videoDetails.author.name}</h3>
           </div>
         )}
-
         {videoDetails && (
-          <div className={styles.d_flex}>
-            <h2>Formats</h2>
-            {videoDetails.videoFormats.map((res, i) => (
-              <div className={styles.format_flex} key={i}>
-                <p key={i * 20}>{res.resolutions}</p>
-                <p key={i * 40}>{msTimeFormat(res.duration)}</p>
-                <p key={i * 60}>{formatBytes(res.length)}</p>
-                <button
-                  className={styles.convert_btn}
-                  onClick={(e) => downloadVideoHandle(e, res.resolutions)}
-                >
-                  Convert
-                </button>
+          <div className={styles.tabs}>
+            <div className={styles.tab_header}>
+              <div
+                className={isActive === 1 ? `${styles.active}` : null}
+                onClick={() => toggleClass(1)}
+              >
+                <i></i> Video
               </div>
-            ))}
-          </div>
-        )}
-        {videoDetails && (
-          <div className={styles.d_flex}>
-            <h2>Formats</h2>
-            {videoDetails.audioFormats.map((res, i) => (
-              <div className={styles.format_flex} key={i}>
-                <p key={i * 20}>{res.quality}K</p>
-                <p key={i * 40}>{msTimeFormat(res.duration)}</p>
-                <p key={i * 60}>{formatBytes(res.length)}</p>
-                <button
-                  className={styles.convert_btn}
-                  onClick={(e) => downloadAudioHandle(e, res.quality)}
-                >
-                  Convert
-                </button>
+              <div
+                className={isActive === 2 ? `${styles.active}` : null}
+                onClick={() => toggleClass(2)}
+              >
+                <i></i> Audio
               </div>
-            ))}
+            </div>
+            <div
+              className={
+                left === 1
+                  ? `${styles.tab_indicator} ${styles.left25}`
+                  : `${styles.tab_indicator} ${styles.left50}`
+              }
+            ></div>
+            <div className={styles.tab_body}>
+              <div
+                className={isActive === 1 ? `${styles.active}` : null}
+                onClick={() => toggleClass(1)}
+              >
+                {videoDetails && (
+                  <div className={styles.d_flex}>
+                    {videoDetails.videoFormats.map((res, i) => (
+                      <div className={styles.format_flex} key={i}>
+                        <p key={i * 20}>{res.resolutions}p</p>
+                        <p key={i * 40}>{msTimeFormat(res.duration)}</p>
+                        <p key={i * 60}>{formatBytes(res.length)}</p>
+                        <button
+                          className={styles.convert_btn}
+                          onClick={(e) =>
+                            downloadVideoHandle(e, res.resolutions)
+                          }
+                        >
+                          Convert
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div
+                className={isActive === 2 ? `${styles.active}` : null}
+                onClick={() => toggleClass(2)}
+              >
+                {videoDetails && (
+                  <div className={styles.d_flex}>
+                    {videoDetails.audioFormats.map((res, i) => (
+                      <div className={styles.format_flex} key={i}>
+                        <p key={i * 20}>{res.quality}K</p>
+                        <p key={i * 40}>{msTimeFormat(res.duration)}</p>
+                        <p key={i * 60}>{formatBytes(res.length)}</p>
+                        <button
+                          className={styles.convert_btn}
+                          onClick={(e) => downloadAudioHandle(e, res.quality)}
+                        >
+                          Convert
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>

@@ -11,6 +11,7 @@ export default function Home() {
   const [videoDetails, setVideoDetails] = useState(null);
   const [isActive, setActive] = useState(1);
   const [left, setLeft] = useState(1);
+  const [progress, setProgress] = useState(0);
 
   const toggleClass = (index) => {
     setActive(index);
@@ -44,6 +45,12 @@ export default function Home() {
       url: `/api/download?id=${urlID}&format=video&resolution=${resolution}`,
       method: "GET",
       responseType: "blob",
+      onDownloadProgress: (progressEvent) => {
+        let percentCompleted = Math.round(
+          (progressEvent.loaded * 100) / progressEvent.total
+        );
+        setProgress(percentCompleted);
+      },
     }).then((res) => {
       console.log(res);
       for (const h in res.headers) {
@@ -67,6 +74,12 @@ export default function Home() {
       url: `/api/download?id=${urlID}&format=audio&quality=${quality}`,
       method: "GET",
       responseType: "blob",
+      onDownloadProgress: (progressEvent) => {
+        let percentCompleted = Math.round(
+          (progressEvent.loaded * 100) / progressEvent.total
+        );
+        setProgress(percentCompleted);
+      },
     }).then((res) => {
       console.log(res);
       for (const h in res.headers) {
@@ -129,6 +142,7 @@ export default function Home() {
         <button className={styles.start_btn} onClick={(e) => fetchVideoInfo(e)}>
           Start
         </button>
+        {progress > 1 ? <Progress done={progress} /> : ""}
       </div>
       <div className={styles.video_main_section}>
         {videoDetails && (
@@ -220,3 +234,24 @@ export default function Home() {
     </>
   );
 }
+
+const Progress = ({ done }) => {
+  const [style, setStyle] = useState({});
+
+  useEffect(() => {
+    const newStyle = {
+      opacity: 1,
+      width: `${done}%`,
+    };
+    setStyle(newStyle);
+  }, [done]);
+  console.log(done);
+
+  return (
+    <div className={styles.progress}>
+      <div className={styles.progress_done} style={style}>
+        {done}%
+      </div>
+    </div>
+  );
+};

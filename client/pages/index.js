@@ -89,6 +89,7 @@ export default function Home() {
         }
       }
       filename = decodeURI(filename.split("filename=")[1]);
+      filename = filename.slice(0, filename.length - 1);
       JsFileDownloader(res.data, filename);
     });
   };

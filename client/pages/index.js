@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import styles from "../styles/Home.module.css";
 import axios from "axios";
+import { nanoid } from "nanoid";
 import formatBytes from "../utils/FormatBytes";
 import msTimeFormat from "../utils/FormatTime";
 
@@ -142,10 +143,10 @@ export default function Home() {
                 {videoDetails && (
                   <div className={styles.d_flex}>
                     {videoDetails.videoFormats.map((res, i) => (
-                      <div className={styles.format_flex} key={i}>
-                        <p key={i * 20}>{res.resolutions}p</p>
-                        <p key={i * 40}>{msTimeFormat(res.duration)}</p>
-                        <p key={i * 60}>{formatBytes(res.length)}</p>
+                      <div className={styles.format_flex} key={nanoid(5)}>
+                        <p key={nanoid(5)}>{res.resolutions}p</p>
+                        <p key={nanoid(5)}>{msTimeFormat(res.duration)}</p>
+                        <p key={nanoid(5)}>{formatBytes(res.length)}</p>
                         <button
                           className={styles.convert_btn}
                           onClick={(e) =>
@@ -166,10 +167,10 @@ export default function Home() {
                 {videoDetails && (
                   <div className={styles.d_flex}>
                     {videoDetails.audioFormats.map((res, i) => (
-                      <div className={styles.format_flex} key={i}>
-                        <p key={i * 20}>{res.quality}K</p>
-                        <p key={i * 40}>{msTimeFormat(res.duration)}</p>
-                        <p key={i * 60}>{formatBytes(res.length)}</p>
+                      <div className={styles.format_flex} key={nanoid(5)}>
+                        <p key={nanoid(5)}>{res.quality}K</p>
+                        <p key={nanoid(5)}>{msTimeFormat(res.duration)}</p>
+                        <p key={nanoid(5)}>{formatBytes(res.length)}</p>
                         <button
                           className={styles.convert_btn}
                           onClick={(e) => downloadAudioHandle(e, res.quality)}

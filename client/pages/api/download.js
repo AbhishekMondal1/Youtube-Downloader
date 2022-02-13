@@ -20,6 +20,11 @@ async function handler(req, res) {
     console.log("-req", req.query);
     const { id, format } = req.query;
     let vid, aud, onlyaudio;
+
+    if (fs.existsSync("./public/video") === false) {
+        fs.mkdirSync("./public/video");
+    }
+
     ytdl
         .getInfo(id)
         .then(({ videoDetails, formats }) => {

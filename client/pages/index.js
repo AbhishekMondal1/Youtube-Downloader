@@ -1,9 +1,10 @@
 import Head from "next/head";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "../styles/Home.module.css";
 import axios from "axios";
-import JsFileDownloader from "js-file-download";
+import formatBytes from "../utils/FormatBytes";
+import msTimeFormat from "../utils/FormatTime";
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -11,7 +12,8 @@ export default function Home() {
   const [videoDetails, setVideoDetails] = useState(null);
   const [isActive, setActive] = useState(1);
   const [left, setLeft] = useState(1);
-  const [progress, setProgress] = useState(0);
+  const [fileurl, setFileurl] = useState("");
+  const downloadLink = useRef(null);
 
   const toggleClass = (index) => {
     setActive(index);
@@ -19,19 +21,17 @@ export default function Home() {
   };
 
   useEffect(() => {
-    console.log("ueleff-", url);
     let paramString = url.split("?")[1];
     let queryString = new URLSearchParams(paramString);
     for (let pair of queryString.entries()) {
       if (pair[0] == "v" && pair[1].length == 11) {
         setUrlID(pair[1]);
       }
-      console.log(urlID);
     }
   }, [url, urlID]);
+
   const fetchData = async () => {
     const res = await axios.get(`/api/videodetails?id=${urlID}`);
-    console.log("res--", res.data);
     setVideoDetails(res.data);
   };
 
@@ -44,23 +44,10 @@ export default function Home() {
     axios({
       url: `/api/download?id=${urlID}&format=video&resolution=${resolution}`,
       method: "GET",
-      responseType: "blob",
-      onDownloadProgress: (progressEvent) => {
-        let percentCompleted = Math.round(
-          (progressEvent.loaded * 100) / progressEvent.total
-        );
-        setProgress(percentCompleted);
-      },
+      responseType: "json",
     }).then((res) => {
-      console.log(res);
-      for (const h in res.headers) {
-        if (h == "content-disposition") {
-          let filename = res.headers[h].split(" ")[1];
-          console.log(filename);
-        }
-      }
-      filename = decodeURI(filename.split("filename=")[1]);
-      JsFileDownloader(res.data, filename);
+      setFileurl(res.data);
+      downloadLink.current.click();
     });
   };
 
@@ -73,58 +60,16 @@ export default function Home() {
     axios({
       url: `/api/download?id=${urlID}&format=audio&quality=${quality}`,
       method: "GET",
-      responseType: "blob",
-      onDownloadProgress: (progressEvent) => {
-        let percentCompleted = Math.round(
-          (progressEvent.loaded * 100) / progressEvent.total
-        );
-        setProgress(percentCompleted);
-      },
+      responseType: "json",
     }).then((res) => {
-      console.log(res);
-      for (const h in res.headers) {
-        if (h == "content-disposition") {
-          let filename = res.headers[h].split(" ")[1];
-          console.log(filename);
-        }
-      }
-      filename = decodeURI(filename.split("filename=")[1]);
-      filename = filename.slice(0, filename.length - 1);
-      JsFileDownloader(res.data, filename);
+      setFileurl(res.data);
+      downloadLink.current.click();
     });
   };
 
   const downloadAudioHandle = async (e, quality) => {
     e.preventDefault();
     quality && downloadAudio(quality);
-  };
-  const formatBytes = (bytes, decimals = 2) => {
-    if (!bytes) return "Unknown size";
-
-    if (bytes === 0) return "0 Bytes";
-
-    const k = 1024;
-    const dm = decimals < 0 ? 0 : decimals;
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
-  };
-
-  const msTimeFormat = (duration) => {
-    duration = duration / 1000;
-    let hrs = ~~(duration / 3600);
-    let mins = ~~((duration % 3600) / 60);
-    let secs = ~~duration % 60;
-    let hmsTime = "";
-
-    if (hrs > 0) {
-      hmsTime += "" + hrs + ":" + (mins < 10 ? "0" : "");
-    }
-    hmsTime += "" + mins + ":" + (secs < 10 ? "0" : "");
-    hmsTime += "" + secs;
-
-    return hmsTime;
   };
 
   return (
@@ -143,7 +88,15 @@ export default function Home() {
         <button className={styles.start_btn} onClick={(e) => fetchVideoInfo(e)}>
           Start
         </button>
-        {progress > 1 ? <Progress done={progress} /> : ""}
+        <a
+          target="_blank"
+          ref={downloadLink}
+          download
+          href={`/video/${fileurl}`}
+          style={{ display: "none" }}
+        >
+          Download
+        </a>
       </div>
       <div className={styles.video_main_section}>
         {videoDetails && (
@@ -235,24 +188,3 @@ export default function Home() {
     </>
   );
 }
-
-const Progress = ({ done }) => {
-  const [style, setStyle] = useState({});
-
-  useEffect(() => {
-    const newStyle = {
-      opacity: 1,
-      width: `${done}%`,
-    };
-    setStyle(newStyle);
-  }, [done]);
-  console.log(done);
-
-  return (
-    <div className={styles.progress}>
-      <div className={styles.progress_done} style={style}>
-        {done}%
-      </div>
-    </div>
-  );
-};

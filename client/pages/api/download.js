@@ -24,6 +24,7 @@ async function handler(req, res) {
         .getInfo(id)
         .then(({ videoDetails, formats }) => {
             const { title } = videoDetails;
+            const filename = `${sanitize(title)}`;
             const streams = {};
             if (format === "video") {
                 const resolution = parseInt(req.query.resolution);
@@ -46,10 +47,10 @@ async function handler(req, res) {
 
                 if (videoFormat[0].itag) {
                     vid = ytdl(id, { format: "mp4", quality: videoFormat[0].itag }).pipe(
-                        fs.createWriteStream(`./public/video/${title}-${nanoid(7)}.mp4`)
+                        fs.createWriteStream(`./public/video/${filename}-${nanoid(7)}.mp4`)
                     );
                     aud = ytdl(id, { quality: "140" }).pipe(
-                        fs.createWriteStream(`./public/video/${title}-${nanoid(7)}.mp3`)
+                        fs.createWriteStream(`./public/video/${filename}-${nanoid(7)}.mp3`)
                     );
                 }
             }
@@ -58,13 +59,13 @@ async function handler(req, res) {
                 formats.forEach((formatVal) => {
                     if (formatVal.audioBitrate === audioQuality) {
                         onlyaudio = ytdl(id, { quality: `${formatVal.itag}` }).pipe(
-                            fs.createWriteStream(`./public/video/${title}-${nanoid(7)}.mp3`)
+                            fs.createWriteStream(
+                                `./public/video/${filename}-${nanoid(7)}.mp3`
+                            )
                         );
                     }
                 });
             }
-
-            const filename = `${sanitize(title)}`;
 
             console.log(filename);
             vid &&

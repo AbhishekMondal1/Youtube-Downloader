@@ -90,7 +90,6 @@ export default function Home() {
           Start
         </button>
         <a
-          target="_blank"
           ref={downloadLink}
           download
           href={`/video/${fileurl}`}

@@ -5,6 +5,9 @@ const { spawn } = require("child_process");
 const ffmpegPath = require("ffmpeg-static");
 const sanitize = require("sanitize-filename");
 const { nanoid } = require("nanoid");
+const axios = require("axios");
+const FormData = require("form-data");
+
 import { validator } from "../../middlewares/validator";
 import { querySchema } from "../../schema/querySchema";
 
@@ -19,11 +22,7 @@ const getResolutions = (formats) =>
 async function handler(req, res) {
     console.log("-req", req.query);
     const { id, format } = req.query;
-    let vid, aud, onlyaudio;
-
-    if (fs.existsSync("./public/video") === false) {
-        fs.mkdirSync("./public/video");
-    }
+    let videoStream, audioStream, onlyAudioStream;
 
     ytdl
         .getInfo(id)
@@ -34,38 +33,45 @@ async function handler(req, res) {
             if (format === "video") {
                 const resolution = parseInt(req.query.resolution);
 
-                const resolutions = getResolutions(formats);
+                const availableResolutions = getResolutions(formats);
 
-                if (!resolutions.includes(resolution)) {
+                if (!availableResolutions.includes(resolution)) {
                     return res
                         .status(400)
                         .end(new Error("Resolution is incorrect").toString());
                 }
                 const videoFormat = chain(formats)
-                    .filter(function(val) {
-                        return val.height === resolution && val.codecs ?
-                            val.codecs.startsWith("avc1") :
+                    .filter(function(formatItem) {
+                        return formatItem.height === resolution && formatItem.codecs ?
+                            formatItem.codecs.startsWith("avc1") :
                             false;
                     })
                     .orderBy("fps", "desc")
                     .value();
 
                 if (videoFormat[0].itag) {
-                    vid = ytdl(id, { format: "mp4", quality: videoFormat[0].itag }).pipe(
-                        fs.createWriteStream(`./public/video/${filename}-${nanoid(7)}.mp4`)
+                    videoStream = ytdl(id, {
+                        format: "mp4",
+                        quality: videoFormat[0].itag,
+                    }).pipe(
+                        fs.createWriteStream(
+                            `./video_audio_temp/${filename}-${nanoid(7)}.mp4`
+                        )
                     );
-                    aud = ytdl(id, { quality: "140" }).pipe(
-                        fs.createWriteStream(`./public/video/${filename}-${nanoid(7)}.mp3`)
+                    audioStream = ytdl(id, { quality: "140" }).pipe(
+                        fs.createWriteStream(
+                            `./video_audio_temp/${filename}-${nanoid(7)}.mp3`
+                        )
                     );
                 }
             }
             if (format === "audio") {
                 const audioQuality = parseInt(req.query.quality);
-                formats.forEach((formatVal) => {
-                    if (formatVal.audioBitrate === audioQuality) {
-                        onlyaudio = ytdl(id, { quality: `${formatVal.itag}` }).pipe(
+                formats.forEach((formatItem) => {
+                    if (formatItem.audioBitrate === audioQuality) {
+                        onlyAudioStream = ytdl(id, { quality: `${formatItem.itag}` }).pipe(
                             fs.createWriteStream(
-                                `./public/video/${filename}-${nanoid(7)}.mp3`
+                                `./video_audio_temp/${filename}-${nanoid(7)}.mp3`
                             )
                         );
                     }
@@ -73,19 +79,19 @@ async function handler(req, res) {
             }
 
             console.log(filename);
-            vid &&
-                vid.on("finish", function() {
-                    let optfile = `${filename}_${nanoid(7)}.mp4`;
+            videoStream &&
+                videoStream.on("finish", function() {
+                    let renderOutFile = `${filename}_${nanoid(7)}.mp4`;
                     const ffmpegProcess = spawn(ffmpegPath, [
                         "-i",
-                        `${vid.path}`,
+                        `${videoStream.path}`,
                         "-i",
-                        `${aud.path}`,
+                        `${audioStream.path}`,
                         "-c:v",
                         "copy",
                         "-c:a",
                         "copy",
-                        `./public/video/${optfile}`,
+                        `./video_audio_temp/${renderOutFile}`,
                     ]);
 
                     ffmpegProcess.stdout.on("data", (data) => {
@@ -103,33 +109,52 @@ async function handler(req, res) {
                     ffmpegProcess.on("close", (code) => {
                         console.log(`child process exited with code ${code}`);
                         if (code == 0) {
-                            console.log(optfile);
-                            fs.unlink(vid.path, (err) => {
-                                if (err) throw err;
-                                console.log("temp file was deleted");
+                            console.log(renderOutFile);
+                            const form = new FormData();
+                            form.append(
+                                "singlefile",
+                                fs.createReadStream(`./video_audio_temp/${renderOutFile}`),
+                                `${renderOutFile}`
+                            );
+
+                            const response = axios.post(
+                                `${process.env.VIDEO_HOST_SERVER_URL}/uploadfile`,
+                                form, {
+                                    headers: {
+                                        ...form.getHeaders(),
+                                    },
+                                }
+                            );
+
+                            response.then((filenameResponse) => {
+                                res.send(filenameResponse.data);
                             });
-                            fs.unlink(aud.path, (err) => {
+
+                            fs.unlink(videoStream.path, (err) => {
                                 if (err) throw err;
                                 console.log("temp file was deleted");
                             });
 
-                            res.send(optfile);
+                            fs.unlink(audioStream.path, (err) => {
+                                if (err) throw err;
+                                console.log("temp file was deleted");
+                            });
                         }
                     });
 
                     res.on("close", () => ffmpegProcess.kill());
                 });
 
-            onlyaudio &&
-                onlyaudio.on("finish", function() {
+            onlyAudioStream &&
+                onlyAudioStream.on("finish", function() {
                     console.log(filename);
-                    let optfile = `${filename}_${nanoid(7)}.mp3`;
+                    let renderOutFile = `${filename}_${nanoid(7)}.mp3`;
                     const ffmpegProcess = spawn(ffmpegPath, [
                         "-i",
-                        `${onlyaudio.path}`,
+                        `${onlyAudioStream.path}`,
                         "-ac",
                         "2",
-                        `./public/video/${optfile}`,
+                        `./video_audio_temp/${renderOutFile}`,
                     ]);
 
                     ffmpegProcess.stdout.on("data", (data) => {
@@ -147,12 +172,31 @@ async function handler(req, res) {
                     ffmpegProcess.on("close", (code) => {
                         console.log(`child process exited with code ${code}`);
                         if (code == 0) {
-                            console.log(optfile);
-                            fs.unlink(onlyaudio.path, (err) => {
+                            console.log(renderOutFile);
+                            const form = new FormData();
+                            form.append(
+                                "singlefile",
+                                fs.createReadStream(`./video_audio_temp/${renderOutFile}`),
+                                `${renderOutFile}`
+                            );
+
+                            const response = axios.post(
+                                `${process.env.VIDEO_HOST_SERVER_URL}/uploadfile`,
+                                form, {
+                                    headers: {
+                                        ...form.getHeaders(),
+                                    },
+                                }
+                            );
+
+                            fs.unlink(onlyAudioStream.path, (err) => {
                                 if (err) throw err;
                                 console.log("temp file was deleted");
                             });
-                            res.send(optfile);
+
+                            response.then((filenameResponse) => {
+                                res.send(filenameResponse.data);
+                            });
                         }
                     });
 

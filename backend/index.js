@@ -6,6 +6,7 @@ const PORT = process.env.PORT || 8000;
 
 require("dotenv").config();
 app.use(cors());
+app.use("/video", express.static("video"));
 
 const fileStorageEngine = multer.diskStorage({
     destination: (req, file, cb) => {

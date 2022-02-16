@@ -11,8 +11,11 @@
     "license": "ISC",
     "dependencies": {
         "cors": "^2.8.5",
+        "dotenv": "^16.0.0",
         "express": "^4.17.2",
-        "nodemon": "^2.0.15",
-        "ytdl-core": "^4.10.0"
+        "multer": "^1.4.4"
+    },
+    "devDependencies": {
+        "nodemon": "^2.0.15"
     }
 }

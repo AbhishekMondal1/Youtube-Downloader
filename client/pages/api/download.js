@@ -126,10 +126,6 @@ async function handler(req, res) {
                                 }
                             );
 
-                            response.then((filenameResponse) => {
-                                res.send(filenameResponse.data);
-                            });
-
                             fs.unlink(videoStream.path, (err) => {
                                 if (err) throw err;
                                 console.log("temp file was deleted");
@@ -138,6 +134,14 @@ async function handler(req, res) {
                             fs.unlink(audioStream.path, (err) => {
                                 if (err) throw err;
                                 console.log("temp file was deleted");
+                            });
+
+                            response.then((filenameResponse) => {
+                                fs.unlink(`./video_audio_temp/${renderOutFile}`, (err) => {
+                                    if (err) throw err;
+                                    console.log("temp file was deleted");
+                                });
+                                res.send(filenameResponse.data);
                             });
                         }
                     });
@@ -195,6 +199,10 @@ async function handler(req, res) {
                             });
 
                             response.then((filenameResponse) => {
+                                fs.unlink(`./video_audio_temp/${renderOutFile}`, (err) => {
+                                    if (err) throw err;
+                                    console.log("temp file was deleted");
+                                });
                                 res.send(filenameResponse.data);
                             });
                         }

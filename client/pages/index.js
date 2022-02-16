@@ -80,19 +80,29 @@ export default function Home() {
       </Head>
       <div className={styles.d_flex}>
         <h1>Youtube Downloader</h1>
-        <input
-          className={styles.input_btn}
-          type="text"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-        />
-        <button className={styles.start_btn} onClick={(e) => fetchVideoInfo(e)}>
-          Start
-        </button>
+        <div className={styles.input_wrapper}>
+          <input
+            className={styles.input_btn}
+            type="text"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+          />
+          <button
+            className={styles.close_icon}
+            type="reset"
+            onClick={(e) => setUrl("")}
+          ></button>
+          <button
+            className={styles.start_btn}
+            onClick={(e) => fetchVideoInfo(e)}
+          >
+            Start
+          </button>
+        </div>
         <a
           ref={downloadLink}
           download
-          href={`/video/${fileurl}`}
+          href={`${process.env.NEXT_PUBLIC_VIDEO_HOST_SERVER_URL}/video/${fileurl}`}
           style={{ display: "none" }}
         >
           Download

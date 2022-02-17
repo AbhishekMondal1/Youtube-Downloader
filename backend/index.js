@@ -1,12 +1,21 @@
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
+const contentDisposition = require("content-disposition");
 const app = express();
 const PORT = process.env.PORT || 8000;
 
 require("dotenv").config();
 app.use(cors());
-app.use("/video", express.static("video"));
+
+app.use(
+    "/video",
+    express.static("video", {
+        setHeaders: function(res, path) {
+            res.setHeader("Content-Disposition", contentDisposition(path));
+        },
+    })
+);
 
 const fileStorageEngine = multer.diskStorage({
     destination: (req, file, cb) => {

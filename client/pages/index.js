@@ -27,6 +27,11 @@ export default function Home() {
     for (let pair of queryString.entries()) {
       if (pair[0] == "v" && pair[1].length == 11) {
         setUrlID(pair[1]);
+      } else {
+        let regex = /^https:\/\/youtu\.be\/zF34dRivLOw$/i;
+        if (regex.test(url)) {
+          setUrlID(url.split("/")[3]);
+        }
       }
     }
   }, [url, urlID]);
@@ -86,6 +91,11 @@ export default function Home() {
             type="text"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                fetchVideoInfo(e);
+              }
+            }}
           />
           <button
             className={styles.close_icon}

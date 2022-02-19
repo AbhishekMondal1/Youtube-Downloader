@@ -12,30 +12,40 @@ export default function Home() {
   const [urlID, setUrlID] = useState("");
   const [videoDetails, setVideoDetails] = useState(null);
   const [isActive, setActive] = useState(1);
+  const [isInputError, setIsInputError] = useState(null);
   const [left, setLeft] = useState(1);
   const [fileurl, setFileurl] = useState("");
   const downloadLink = useRef(null);
+  const inputText = useRef(false);
 
   const toggleClass = (index) => {
     setActive(index);
     setLeft(index);
   };
 
-  useEffect(() => {
+  useEffect(() => {}, [url, urlID]);
+
+  const validUrlCheck = () => {
     let paramString = url.split("?")[1];
     let queryString = new URLSearchParams(paramString);
     for (let pair of queryString.entries()) {
       if (pair[0] == "v" && pair[1].length == 11) {
         setUrlID(pair[1]);
+        setIsInputError(false);
+        return true;
       } else {
-        let regex = /^https:\/\/youtu\.be\/zF34dRivLOw$/i;
+        let regex = /^https:\/\/youtu\.be\/zF34dRivLOw$/;
         if (regex.test(url)) {
           setUrlID(url.split("/")[3]);
+          setIsInputError(false);
+          return true;
+        } else {
+          setIsInputError(true);
+          return false;
         }
       }
     }
-  }, [url, urlID]);
-
+  };
   const fetchData = async () => {
     const res = await axios.get(`/api/videodetails?id=${urlID}`);
     setVideoDetails(res.data);
@@ -90,6 +100,7 @@ export default function Home() {
             className={styles.input_btn}
             type="text"
             value={url}
+            ref={inputText}
             onChange={(e) => setUrl(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
@@ -100,15 +111,28 @@ export default function Home() {
           <button
             className={styles.close_icon}
             type="reset"
-            onClick={(e) => setUrl("")}
+            onClick={(e) => {
+              setUrl("");
+            }}
           ></button>
           <button
             className={styles.start_btn}
-            onClick={(e) => fetchVideoInfo(e)}
+            onClick={(e) => {
+              validUrlCheck() && fetchVideoInfo(e);
+            }}
           >
             Start
           </button>
         </div>
+        <span
+          className={
+            isInputError
+              ? `${styles.error_input}`
+              : `${styles.error_input_none}`
+          }
+        >
+          Enter correct url 🚫️
+        </span>
         <a
           ref={downloadLink}
           download

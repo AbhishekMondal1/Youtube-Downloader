@@ -12,9 +12,10 @@ export default function Home() {
   const [urlID, setUrlID] = useState("");
   const [videoDetails, setVideoDetails] = useState(null);
   const [isActive, setActive] = useState(1);
-  const [isInputError, setIsInputError] = useState(null);
+  const [isInputError, setIsInputError] = useState(false);
   const [left, setLeft] = useState(1);
   const [fileurl, setFileurl] = useState("");
+  const [checkurl, setCheckurl] = useState(null)
   const downloadLink = useRef(null);
   const inputText = useRef(false);
 
@@ -23,29 +24,27 @@ export default function Home() {
     setLeft(index);
   };
 
-  useEffect(() => {}, [url, urlID]);
-
-  const validUrlCheck = () => {
-    let paramString = url.split("?")[1];
-    let queryString = new URLSearchParams(paramString);
-    for (let pair of queryString.entries()) {
-      if (pair[0] == "v" && pair[1].length == 11) {
-        setUrlID(pair[1]);
+  useEffect(() => {
+    const validUrlCheck = () => {
+      console.log(url);
+      let regex =
+        /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+      let match = url.match(regex);
+      if (match && match[7].length == 11) {
+        setUrlID(match[7]);
         setIsInputError(false);
+        console.log(isInputError, urlID);
         return true;
       } else {
-        let regex = /^https:\/\/youtu\.be\/zF34dRivLOw$/;
-        if (regex.test(url)) {
-          setUrlID(url.split("/")[3]);
-          setIsInputError(false);
-          return true;
-        } else {
-          setIsInputError(true);
-          return false;
-        }
+        setUrlID("");
+        setIsInputError(true);
+        console.log("err", isInputError, urlID);
+        return false;
       }
-    }
-  };
+    };
+    validUrlCheck();
+  }, [checkurl]);
+
   const fetchData = async () => {
     const res = await axios.get(`/api/videodetails?id=${urlID}`);
     setVideoDetails(res.data);
@@ -101,7 +100,11 @@ export default function Home() {
             type="text"
             value={url}
             ref={inputText}
-            onChange={(e) => setUrl(e.target.value)}
+            onChange={(e) => {
+              setUrl(e.target.value);
+              setIsInputError(false);
+              setCheckurl(false)
+            }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 fetchVideoInfo(e);
@@ -118,7 +121,8 @@ export default function Home() {
           <button
             className={styles.start_btn}
             onClick={(e) => {
-              validUrlCheck() && fetchVideoInfo(e);
+              setCheckurl(true)
+              fetchVideoInfo(e);
             }}
           >
             Start

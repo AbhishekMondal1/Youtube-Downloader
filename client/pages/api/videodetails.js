@@ -16,7 +16,8 @@ const handler = async (req, res) => {
   console.log(id);
 
   try {
-    const videoInfo = await ytdl.getInfo(id);
+    const videoid = await ytdl.getURLVideoID(id);
+    const videoInfo = await ytdl.getInfo(videoid);
     const { videoDetails, formats } = videoInfo;
     const { title, thumbnails, author } = videoDetails;
     const thumbnailURL = last(thumbnails).url;
@@ -55,10 +56,17 @@ const handler = async (req, res) => {
       }
     });
 
-    res.json({ title, thumbnailURL, videoFormats, audioFormats, author });
+    res.json({
+      title,
+      thumbnailURL,
+      videoid,
+      videoFormats,
+      audioFormats,
+      author,
+    });
   } catch (err) {
     console.log(err);
-    if (err) res.status(400).json({ validurl: "false" });
+    if (err) res.status(200).json({ validid: "false" });
   }
 };
 

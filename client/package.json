@@ -1,27 +1,29 @@
 {
-  "name": "my-app",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "axios": "^0.25.0",
-    "ffmpeg-static": "^4.4.1",
-    "form-data": "^4.0.0",
-    "lodash": "^4.17.21",
-    "nanoid": "^3.2.0",
-    "next": "12.0.9",
-    "react": "17.0.2",
-    "react-dom": "17.0.2",
-    "sanitize-filename": "^1.6.3",
-    "ytdl-core": "^4.10.1",
-    "yup": "^0.32.11"
-  },
-  "devDependencies": {
-    "eslint": "8.8.0",
-    "eslint-config-next": "12.0.9"
-  }
+    "name": "my-app",
+    "private": true,
+    "scripts": {
+        "dev": "node server.js",
+        "build": "next build",
+        "start": "cross-env NODE_ENV=production node server.js",
+        "lint": "next lint"
+    },
+    "dependencies": {
+        "axios": "^0.25.0",
+        "cross-env": "^7.0.3",
+        "express": "^4.17.3",
+        "ffmpeg-static": "^4.4.1",
+        "form-data": "^4.0.0",
+        "lodash": "^4.17.21",
+        "nanoid": "^3.2.0",
+        "next": "12.0.9",
+        "react": "17.0.2",
+        "react-dom": "17.0.2",
+        "sanitize-filename": "^1.6.3",
+        "ytdl-core": "^4.10.1",
+        "yup": "^0.32.11"
+    },
+    "devDependencies": {
+        "eslint": "8.8.0",
+        "eslint-config-next": "12.0.9"
+    }
 }

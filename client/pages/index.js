@@ -63,7 +63,7 @@ export default function Home() {
       method: "GET",
       responseType: "json",
     }).then((res) => {
-      setFileurl(res.data);
+      setFileurl(res.data.replaceAll("wait2start", ""));
       downloadLink.current.click();
     });
   };
